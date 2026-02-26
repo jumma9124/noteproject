@@ -4,7 +4,8 @@ export function getCalendarDays(year, month) {
   const lastDay = new Date(year, month + 1, 0);
   const days = [];
 
-  const startDow = firstDay.getDay();
+  // 월요일 시작: (일=0 → 6, 월=1 → 0, ..., 토=6 → 5)
+  const startDow = (firstDay.getDay() + 6) % 7;
   for (let i = startDow - 1; i >= 0; i--) {
     days.push({ date: new Date(year, month, -i), isCurrentMonth: false });
   }

@@ -5,6 +5,7 @@ import PrivateRoute from './common/components/PrivateRoute';
 import Layout from './common/components/Layout';
 import Login from './features/auth/Login';
 import DiaryMain from './features/diary/pages/DiaryMain';
+import DayPage from './features/diary/pages/DayPage';
 import TodosPage from './features/diary/pages/TodosPage';
 import YearGoalsPage from './features/diary/pages/YearGoalsPage';
 import FinanceMain from './features/finance/pages/FinanceMain';
@@ -40,6 +41,10 @@ function App() {
         <Route
           path="/"
           element={<PrivateRoute user={user}><Layout><DiaryMain /></Layout></PrivateRoute>}
+        />
+        <Route
+          path="/day/:date"
+          element={<PrivateRoute user={user}><Layout><DayPage /></Layout></PrivateRoute>}
         />
         <Route
           path="/todos"
