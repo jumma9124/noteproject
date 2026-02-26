@@ -134,8 +134,8 @@ function DayPage() {
         </div>
       </div>
 
-      {/* 오른쪽 사이드바 */}
-      <div className="w-72 flex flex-col gap-3 shrink-0 overflow-hidden min-h-0">
+      {/* 오른쪽 */}
+      <div className="flex-1 flex flex-col gap-3 min-w-0 overflow-hidden min-h-0">
 
         {/* 휴가 / 공휴일 설정 */}
         <div className="bg-white rounded-xl shadow-sm p-4">
