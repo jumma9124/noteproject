@@ -9,10 +9,17 @@ import YearGoalsPage from './pages/YearGoalsPage';
 import FinanceMain from './pages/FinanceMain';
 import Settings from './pages/Settings';
 
+// 개발 중 로그인 우회 — 배포 전 false로 변경
+const DEV_SKIP_AUTH = true;
+
 function App() {
   const [user, setUser] = useState(undefined); // undefined = 로딩 중
 
   useEffect(() => {
+    if (DEV_SKIP_AUTH) {
+      setUser({ uid: 'dev', displayName: 'Dev User' });
+      return;
+    }
     const unsubscribe = onAuthChange((currentUser) => {
       setUser(currentUser);
     });
