@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { getCalendarDays, formatDate } from '../../../common/utils/dateUtils';
 
+
 const DOW_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
 
 const VACATION_LABEL = { full: '연차', half: '반차', quarter: '반반차' };
@@ -55,7 +56,12 @@ function Calendar({ year, month, calendarData, onPrevMonth, onNextMonth }) {
     <div className="bg-white rounded-xl shadow-sm p-4 flex-1 flex flex-col min-h-0">
       <div className="flex items-center justify-between mb-3">
         <button onClick={onPrevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition-colors">◀</button>
-        <h2 className="text-base font-bold text-gray-800">{year}년 {month + 1}월</h2>
+        <h2
+          onClick={() => navigate('/goals')}
+          className="text-lg font-bold text-gray-800 cursor-pointer hover:text-blue-500 transition-colors"
+        >
+          {year}년 {month + 1}월
+        </h2>
         <button onClick={onNextMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 transition-colors">▶</button>
       </div>
 

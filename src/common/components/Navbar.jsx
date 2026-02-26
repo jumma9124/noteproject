@@ -4,7 +4,7 @@ const navItems = [
   { to: '/',        label: '달력',      icon: '📅' },
   { to: '/todos',   label: '전체 할일', icon: '✓'  },
   { to: '/goals',   label: '연도 목표', icon: '📋' },
-  { to: '/finance', label: '돈관리',    icon: '💰' },
+  { to: '/finance', label: '재무관리',   icon: '💰' },
   { to: '/settings',label: '설정',      icon: '⚙️' },
 ];
 
