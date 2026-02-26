@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { signInWithGoogle } from '../services/auth';
+import { signInWithGoogle } from '../../services/auth';
 
 function Login() {
   const [loading, setLoading] = useState(false);
@@ -32,7 +32,6 @@ function Login() {
           disabled={loading}
           className="flex items-center gap-3 w-full justify-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 active:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {/* Google SVG 아이콘 */}
           <svg width="20" height="20" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.86l6.08-6.08C34.5 3.1 29.56 1 24 1 14.82 1 7.07 6.48 3.72 14.22l7.07 5.49C12.53 13.45 17.83 9.5 24 9.5z"/>
             <path fill="#4285F4" d="M46.52 24.5c0-1.56-.14-3.06-.4-4.5H24v8.52h12.67c-.55 2.94-2.2 5.43-4.68 7.1l7.18 5.57C43.32 37.06 46.52 31.26 46.52 24.5z"/>
@@ -42,7 +41,6 @@ function Login() {
           {loading ? '로그인 중...' : 'Google로 로그인'}
         </button>
 
-        {/* 에러 메시지 */}
         {error && (
           <p className="text-sm text-red-500">{error}</p>
         )}

@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthChange } from './services/auth';
-import PrivateRoute from './components/common/PrivateRoute';
-import Login from './pages/Login';
-import DiaryMain from './pages/DiaryMain';
-import TodosPage from './pages/TodosPage';
-import YearGoalsPage from './pages/YearGoalsPage';
-import FinanceMain from './pages/FinanceMain';
-import Settings from './pages/Settings';
+import PrivateRoute from './common/components/PrivateRoute';
+import Layout from './common/components/Layout';
+import Login from './features/auth/Login';
+import DiaryMain from './features/diary/pages/DiaryMain';
+import TodosPage from './features/diary/pages/TodosPage';
+import YearGoalsPage from './features/diary/pages/YearGoalsPage';
+import FinanceMain from './features/finance/pages/FinanceMain';
+import Settings from './features/settings/Settings';
 
 // 개발 중 로그인 우회 — 배포 전 false로 변경
 const DEV_SKIP_AUTH = true;
@@ -38,23 +39,23 @@ function App() {
         />
         <Route
           path="/"
-          element={<PrivateRoute user={user}><DiaryMain /></PrivateRoute>}
+          element={<PrivateRoute user={user}><Layout><DiaryMain /></Layout></PrivateRoute>}
         />
         <Route
           path="/todos"
-          element={<PrivateRoute user={user}><TodosPage /></PrivateRoute>}
+          element={<PrivateRoute user={user}><Layout><TodosPage /></Layout></PrivateRoute>}
         />
         <Route
           path="/goals"
-          element={<PrivateRoute user={user}><YearGoalsPage /></PrivateRoute>}
+          element={<PrivateRoute user={user}><Layout><YearGoalsPage /></Layout></PrivateRoute>}
         />
         <Route
           path="/finance"
-          element={<PrivateRoute user={user}><FinanceMain /></PrivateRoute>}
+          element={<PrivateRoute user={user}><Layout><FinanceMain /></Layout></PrivateRoute>}
         />
         <Route
           path="/settings"
-          element={<PrivateRoute user={user}><Settings /></PrivateRoute>}
+          element={<PrivateRoute user={user}><Layout><Settings /></Layout></PrivateRoute>}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
