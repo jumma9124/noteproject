@@ -56,9 +56,9 @@ const MOCK_DEBTS_INIT = [
 ];
 
 const MOCK_EXPENSES_INIT = [
-  { id: 'e1', date: '2026-02-23', memo: '점심/커피', amount: 20000 },
-  { id: 'e2', date: '2026-02-24', memo: '교통/식비', amount: 15000 },
-  { id: 'e3', date: '2026-02-25', memo: '',          amount: 10000 },
+  { id: 'e1', date: '2026-02-23', memo: '점심/커피', amount: 20000, method: '카드A' },
+  { id: 'e2', date: '2026-02-24', memo: '교통/식비', amount: 15000, method: '현금'  },
+  { id: 'e3', date: '2026-02-25', memo: '',          amount: 10000, method: '카드B' },
 ];
 
 const MOCK_FIXED_INIT = [
@@ -697,20 +697,20 @@ function AssetManagement({ savings, setSavings }) {
 // ─── EXPENSE INPUT ───────────────────────────────────────────────────────────
 function ExpenseInput() {
   const [expenses, setExpenses] = useState(MOCK_EXPENSES_INIT);
-  const [form,     setForm]     = useState({ date: '', memo: '', amount: '' });
+  const [form,     setForm]     = useState({ date: '', memo: '', amount: '', method: '현금' });
   const [editId,   setEditId]   = useState(null);
 
   const total = expenses.reduce((s, e) => s + e.amount, 0);
   const remaining = WEEKLY_BUDGET - total;
 
-  const handleEdit   = (item) => { setEditId(item.id); setForm({ date: item.date, memo: item.memo, amount: item.amount }); };
-  const handleDelete = (id)   => { setExpenses(prev => prev.filter(e => e.id !== id)); if (editId===id) { setEditId(null); setForm({date:'',memo:'',amount:''}); } };
+  const handleEdit   = (item) => { setEditId(item.id); setForm({ date: item.date, memo: item.memo, amount: item.amount, method: item.method || '현금' }); };
+  const handleDelete = (id)   => { setExpenses(prev => prev.filter(e => e.id !== id)); if (editId===id) { setEditId(null); setForm({date:'',memo:'',amount:'',method:'현금'}); } };
   const handleSubmit = () => {
     if (!form.date || !form.amount) return;
-    const parsed = { date: form.date, memo: form.memo, amount: parseInt(form.amount) };
+    const parsed = { date: form.date, memo: form.memo, amount: parseInt(form.amount), method: form.method };
     if (editId) { setExpenses(prev => prev.map(e => e.id===editId ? {...e,...parsed} : e)); setEditId(null); }
     else setExpenses(prev => [...prev, { id: Date.now().toString(), ...parsed }]);
-    setForm({ date: '', memo: '', amount: '' });
+    setForm({ date: '', memo: '', amount: '', method: '현금' });
   };
 
   return (
@@ -735,12 +735,13 @@ function ExpenseInput() {
           <h3 className="text-sm font-bold text-gray-700 mb-3 shrink-0">지출 내역</h3>
           <div className="flex-1 min-h-0 overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-white"><tr className="text-xs text-gray-400 border-b border-gray-100">{['날짜','메모','금액',''].map(h=><th key={h} className={`pb-2 font-medium ${h==='날짜'||h==='메모'?'text-left':'text-right'}`}>{h}</th>)}</tr></thead>
+              <thead className="sticky top-0 bg-white"><tr className="text-xs text-gray-400 border-b border-gray-100">{['날짜','메모','결제수단','금액',''].map(h=><th key={h} className={`pb-2 font-medium ${h==='날짜'||h==='메모'?'text-left':'text-right'}`}>{h}</th>)}</tr></thead>
               <tbody>
                 {[...expenses].sort((a,b)=>a.date.localeCompare(b.date)).map(item => (
                   <tr key={item.id} onClick={()=>handleEdit(item)} className={`border-b border-gray-50 cursor-pointer group transition-colors ${editId===item.id?'bg-blue-50':'hover:bg-gray-50'}`}>
                     <td className="py-2.5 text-gray-500 text-xs w-24">{item.date}</td>
                     <td className="py-2.5 text-gray-700">{item.memo || <span className="text-gray-300">-</span>}</td>
+                    <td className="py-2.5 text-right text-xs text-gray-400">{item.method || '-'}</td>
                     <td className="py-2.5 text-right font-medium text-gray-800">{item.amount.toLocaleString()}원</td>
                     <td className="py-2.5 text-right"><button onClick={e=>{e.stopPropagation();handleDelete(item.id);}} className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 text-xs">✕</button></td>
                   </tr>
@@ -759,9 +760,10 @@ function ExpenseInput() {
         <h3 className="text-sm font-bold text-gray-700">{editId ? '지출 수정' : '지출 추가'}</h3>
         <div className="flex flex-col gap-1.5"><label className="text-xs text-gray-400">날짜</label><input className={inp} type="date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))} /></div>
         <div className="flex flex-col gap-1.5"><label className="text-xs text-gray-400">메모 (선택)</label><input className={inp} placeholder="점심, 교통비..." value={form.memo} onChange={e=>setForm(p=>({...p,memo:e.target.value}))} /></div>
+        <div className="flex flex-col gap-1.5"><label className="text-xs text-gray-400">결제수단</label><select className={inp} value={form.method} onChange={e=>setForm(p=>({...p,method:e.target.value}))}>{METHODS.map(m=><option key={m}>{m}</option>)}</select></div>
         <div className="flex flex-col gap-1.5"><label className="text-xs text-gray-400">금액 (원)</label><input className={inp} type="number" placeholder="0" value={form.amount} onChange={e=>setForm(p=>({...p,amount:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&handleSubmit()} /></div>
         <div className="flex gap-2 mt-1">
-          {editId && <button onClick={()=>{setEditId(null);setForm({date:'',memo:'',amount:''});}} className="flex-1 py-2 border border-gray-200 text-gray-500 text-sm rounded-lg hover:bg-gray-50">취소</button>}
+          {editId && <button onClick={()=>{setEditId(null);setForm({date:'',memo:'',amount:'',method:'현금'});}} className="flex-1 py-2 border border-gray-200 text-gray-500 text-sm rounded-lg hover:bg-gray-50">취소</button>}
           <button onClick={handleSubmit} disabled={!form.date||!form.amount} className="flex-1 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:bg-gray-100 disabled:text-gray-400">{editId?'수정':'추가'}</button>
         </div>
       </div>
