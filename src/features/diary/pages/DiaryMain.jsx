@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Calendar from '../components/Calendar';
 import { getDday, formatDday } from '../../../common/utils/dateUtils';
 
@@ -55,6 +56,7 @@ function TodoItem({ todo }) {
 }
 
 function DiaryMain() {
+  const navigate = useNavigate();
   const today = new Date();
   const [year, setYear]   = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -99,7 +101,7 @@ function DiaryMain() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 flex flex-col overflow-hidden">
-          <h3 className="text-sm font-bold text-gray-700 mb-2">💼 회사 할일</h3>
+          <h3 onClick={() => navigate('/todos')} className="text-sm font-bold text-gray-700 mb-2 cursor-pointer hover:text-blue-500 transition-colors">💼 회사 할일</h3>
           {workTodos.length === 0
             ? <p className="text-xs text-gray-400">미완료 할일 없음</p>
             : <ul className="flex flex-col gap-1 flex-1 min-h-0 overflow-y-auto">{workTodos.map(t => <TodoItem key={t.id} todo={t} />)}</ul>
@@ -107,7 +109,7 @@ function DiaryMain() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0 flex flex-col overflow-hidden">
-          <h3 className="text-sm font-bold text-gray-700 mb-2">🙋 개인 할일</h3>
+          <h3 onClick={() => navigate('/todos')} className="text-sm font-bold text-gray-700 mb-2 cursor-pointer hover:text-blue-500 transition-colors">🙋 개인 할일</h3>
           {personalTodos.length === 0
             ? <p className="text-xs text-gray-400">미완료 할일 없음</p>
             : <ul className="flex flex-col gap-1 flex-1 min-h-0 overflow-y-auto">{personalTodos.map(t => <TodoItem key={t.id} todo={t} />)}</ul>
