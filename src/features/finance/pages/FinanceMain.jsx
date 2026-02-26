@@ -33,8 +33,8 @@ const MOCK_STOCKS_INIT = [
 ];
 
 const MOCK_SAVINGS_INIT = [
-  { id: 'sa1', name: 'OO은행 정기적금', monthly: 500000, rate: 3.5, totalMonths: 24, elapsed: 12 },
-  { id: 'sa2', name: '청년우대적금',    monthly: 300000, rate: 5.0, totalMonths: 12, elapsed: 6  },
+  { id: 'sa1', name: 'OO은행 정기적금', monthly: 500000, rate: 3.5, totalMonths: 24, elapsed: 12, payments: { 1: true, 2: true } },
+  { id: 'sa2', name: '청년우대적금',    monthly: 300000, rate: 5.0, totalMonths: 12, elapsed: 6,  payments: { 1: true, 2: false } },
 ];
 
 const MOCK_BONDS_INIT = [
@@ -92,20 +92,7 @@ const MOCK_WEEKLY = [
 
 const MOCK_GOALS_INIT = {
   yearGoal: 12000000,
-  months: [
-    { month: 1,  target: 1000000, actual: 900000  },
-    { month: 2,  target: 1000000, actual: 450000  },
-    { month: 3,  target: 1000000, actual: null    },
-    { month: 4,  target: 1000000, actual: null    },
-    { month: 5,  target: 1000000, actual: null    },
-    { month: 6,  target: 1000000, actual: null    },
-    { month: 7,  target: 1000000, actual: null    },
-    { month: 8,  target: 1000000, actual: null    },
-    { month: 9,  target: 1000000, actual: null    },
-    { month: 10, target: 1000000, actual: null    },
-    { month: 11, target: 1000000, actual: null    },
-    { month: 12, target: 1000000, actual: null    },
-  ],
+  months: Array.from({ length: 12 }, (_, i) => ({ month: i + 1, target: 1000000 })),
 };
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -139,7 +126,7 @@ function Dashboard() {
 
   return (
     <div className="flex flex-1 gap-4 p-4 overflow-hidden min-h-0">
-      <div className="flex-1 min-w-0 flex flex-col gap-3 min-h-0">
+      <div className="flex-1 min-w-0 flex flex-col gap-3 min-h-0 overflow-hidden">
         {/* 요약 */}
         <div className="bg-white rounded-xl shadow-sm px-5 py-3 shrink-0">
           <div className="flex items-center gap-6 flex-wrap">
@@ -195,7 +182,7 @@ function Dashboard() {
         </div>
       </div>
       {/* 오른쪽 */}
-      <div className="w-72 shrink-0 flex flex-col gap-3 min-h-0 overflow-hidden">
+      <div className="flex-1 min-w-0 flex flex-col gap-3 min-h-0 overflow-hidden">
         <div className="bg-white rounded-xl shadow-sm p-4 shrink-0">
           <h3 className="text-sm font-bold text-gray-700 mb-3">🎯 2026년 저축 목표</h3>
           <div className="flex justify-between text-xs text-gray-500 mb-1.5">
@@ -230,7 +217,7 @@ function Dashboard() {
         <div className="bg-white rounded-xl shadow-sm p-4 flex-1 min-h-0">
           <h3 className="text-sm font-bold text-gray-700 mb-3">📊 월별 지출 추이</h3>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={MOCK_MONTHLY_TREND} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+            <BarChart data={MOCK_MONTHLY_TREND} margin={{ top: 4, right: 4, bottom: 16, left: -20 }}>
               <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v) => `${v}만원`} />
@@ -383,8 +370,7 @@ function StocksSection() {
 }
 
 // ─── SAVINGS SECTION ─────────────────────────────────────────────────────────
-function SavingsSection() {
-  const [items,  setItems]  = useState(MOCK_SAVINGS_INIT);
+function SavingsSection({ items, setItems }) {
   const [editId, setEditId] = useState(null);
   const [form,   setForm]   = useState({ name: '', monthly: '', rate: '', totalMonths: '', elapsed: '' });
 
@@ -394,9 +380,18 @@ function SavingsSection() {
     if (!form.name || !form.monthly) return;
     const parsed = { name: form.name, monthly: parseInt(form.monthly), rate: parseFloat(form.rate)||0, totalMonths: parseInt(form.totalMonths)||0, elapsed: parseInt(form.elapsed)||0 };
     if (editId) { setItems(prev => prev.map(i => i.id === editId ? { ...i, ...parsed } : i)); setEditId(null); }
-    else { setItems(prev => [...prev, { id: Date.now().toString(), ...parsed }]); }
+    else { setItems(prev => [...prev, { id: Date.now().toString(), ...parsed, payments: {} }]); }
     setForm({ name: '', monthly: '', rate: '', totalMonths: '', elapsed: '' });
   };
+  const handleTogglePayment = (itemId, month) => {
+    setItems(prev => prev.map(item =>
+      item.id === itemId
+        ? { ...item, payments: { ...item.payments, [month]: !item.payments?.[month] } }
+        : item
+    ));
+  };
+
+  const currentItem = items.find(it => it.id === editId);
 
   return (
     <div className="flex flex-1 gap-3 min-h-0 overflow-hidden">
@@ -427,7 +422,7 @@ function SavingsSection() {
           <span className="font-bold text-gray-800">{fmt(items.reduce((s,i)=>s+i.monthly,0))}</span>
         </div>
       </div>
-      <div className="w-72 shrink-0 bg-white rounded-xl shadow-sm p-4 flex flex-col gap-3">
+      <div className="w-72 shrink-0 bg-white rounded-xl shadow-sm p-4 flex flex-col gap-3 overflow-y-auto">
         <h3 className="text-sm font-bold text-gray-700">{editId ? '적금 수정' : '적금 추가'}</h3>
         {[['name','적금명','text'],['monthly','월 납입액 (원)','number'],['rate','이율 (%)','number'],['totalMonths','총 기간 (개월)','number'],['elapsed','납입 기간 (개월)','number']].map(([k,ph,t])=>(
           <input key={k} className={inp} type={t} placeholder={ph} value={form[k]} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))} />
@@ -436,6 +431,23 @@ function SavingsSection() {
           {editId && <button onClick={()=>{setEditId(null);setForm({name:'',monthly:'',rate:'',totalMonths:'',elapsed:''});}} className="flex-1 py-2 border border-gray-200 text-gray-500 text-sm rounded-lg hover:bg-gray-50">취소</button>}
           <button onClick={handleSubmit} disabled={!form.name||!form.monthly} className="flex-1 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:bg-gray-100 disabled:text-gray-400">{editId?'수정':'추가'}</button>
         </div>
+        {editId && currentItem && (
+          <div className="border-t border-gray-100 pt-3">
+            <p className="text-xs font-medium text-gray-500 mb-2">2026년 납입 현황</p>
+            <div className="grid grid-cols-4 gap-1.5">
+              {Array.from({ length: 12 }, (_, i) => i + 1).map(month => {
+                const paid = currentItem.payments?.[month] === true;
+                return (
+                  <button key={month} onClick={() => handleTogglePayment(editId, month)}
+                    className={`py-2 rounded-lg text-xs font-medium transition-colors text-center ${paid ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}>
+                    {month}월<br />{paid ? '✓' : '·'}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-400 mt-2">※ 체크한 달의 납입액이 목표 달성에 반영됩니다</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -663,7 +675,7 @@ function DebtSection() {
 }
 
 // ─── ASSET MANAGEMENT ────────────────────────────────────────────────────────
-function AssetManagement() {
+function AssetManagement({ savings, setSavings }) {
   const [assetTab, setAssetTab] = useState('주식');
   return (
     <div className="flex flex-1 flex-col min-h-0 overflow-hidden p-4 gap-3">
@@ -673,7 +685,7 @@ function AssetManagement() {
         ))}
       </div>
       {assetTab === '주식'    && <StocksSection  />}
-      {assetTab === '적금'    && <SavingsSection />}
+      {assetTab === '적금'    && <SavingsSection items={savings} setItems={setSavings} />}
       {assetTab === '채권'    && <BondSection    />}
       {assetTab === '펀드'    && <FundSection    />}
       {assetTab === '예금/현금' && <DepositSection />}
@@ -872,13 +884,22 @@ function FinanceStats() {
 }
 
 // ─── GOALS ───────────────────────────────────────────────────────────────────
-function FinanceGoals() {
-  const [goals,    setGoals]    = useState(MOCK_GOALS_INIT);
-  const [yearInp,  setYearInp]  = useState(goals.yearGoal.toString());
+function FinanceGoals({ goals, setGoals, savings }) {
+  const [yearInp,   setYearInp]   = useState(goals.yearGoal.toString());
   const [yearSaved, setYearSaved] = useState(false);
 
-  const totalActual  = goals.months.reduce((s, m) => s + (m.actual || 0), 0);
-  const yearGoalPct  = Math.round((totalActual / goals.yearGoal) * 100);
+  const CURRENT_MONTH = 2; // 2026년 2월
+
+  // 적금 납입 체크에서 월별 달성액 자동 계산
+  const monthsWithActuals = goals.months.map(m => ({
+    ...m,
+    actual: m.month <= CURRENT_MONTH
+      ? savings.reduce((sum, s) => sum + (s.payments?.[m.month] ? s.monthly : 0), 0)
+      : null,
+  }));
+
+  const totalActual = monthsWithActuals.reduce((s, m) => s + (m.actual || 0), 0);
+  const yearGoalPct = Math.round((totalActual / goals.yearGoal) * 100);
 
   const handleSaveYear = () => {
     setGoals(p => ({ ...p, yearGoal: parseInt(yearInp) || p.yearGoal }));
@@ -890,8 +911,15 @@ function FinanceGoals() {
     setGoals(p => ({ ...p, months: p.months.map((m, i) => i === monthIdx ? { ...m, target: parseInt(val) || 0 } : m) }));
   };
 
+  const chartData = monthsWithActuals.map(m => ({
+    month: `${m.month}월`,
+    목표: Math.round(m.target / 10000),
+    달성: m.actual != null ? Math.round(m.actual / 10000) : null,
+  }));
+
   return (
     <div className="flex flex-1 gap-4 p-4 overflow-hidden min-h-0">
+      {/* 왼쪽: 연간 목표 + 차트 */}
       <div className="flex-1 min-w-0 flex flex-col gap-3 min-h-0 overflow-y-auto">
         <div className="bg-white rounded-xl shadow-sm p-4 shrink-0">
           <h3 className="text-sm font-bold text-gray-700 mb-3">🎯 2026년 저축 목표</h3>
@@ -908,21 +936,39 @@ function FinanceGoals() {
           </div>
           <span className="text-xs text-blue-500 font-medium">{yearGoalPct}% 달성</span>
         </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col flex-1 min-h-0">
+          <h3 className="text-sm font-bold text-gray-700 mb-3">월별 목표 vs 달성 (만원)</h3>
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 16, left: -10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} unit="만" />
+                <Tooltip formatter={(v, n) => [`${v}만원`, n]} />
+                <Bar dataKey="목표" fill="#e2e8f0" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="달성" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+      {/* 오른쪽: 월별 테이블 */}
+      <div className="w-80 shrink-0 flex flex-col gap-3 min-h-0 overflow-y-auto">
         <div className="bg-white rounded-xl shadow-sm p-4">
           <h3 className="text-sm font-bold text-gray-700 mb-3">월별 저축 목표 / 달성</h3>
           <table className="w-full text-sm">
             <thead><tr className="text-xs text-gray-400 border-b border-gray-100">{['월','목표','달성','달성률'].map(h=><th key={h} className={`pb-2 font-medium ${h==='월'?'text-left':'text-right'}`}>{h}</th>)}</tr></thead>
             <tbody>
-              {goals.months.map((m, i) => {
+              {monthsWithActuals.map((m, i) => {
                 const pct = m.actual != null ? Math.round((m.actual / m.target) * 100) : null;
                 return (
                   <tr key={m.month} className="border-b border-gray-50">
-                    <td className="py-2 text-gray-700 font-medium">{m.month}월</td>
-                    <td className="py-2 text-right">
-                      <input type="number" className="w-28 text-right text-sm border border-gray-200 rounded px-2 py-0.5 focus:outline-none focus:border-blue-300" value={m.target} onChange={e => handleTargetChange(i, e.target.value)} />
+                    <td className="py-1.5 text-gray-700 font-medium">{m.month}월</td>
+                    <td className="py-1.5 text-right">
+                      <input type="number" className="w-24 text-right text-xs border border-gray-200 rounded px-2 py-0.5 focus:outline-none focus:border-blue-300" value={m.target} onChange={e => handleTargetChange(i, e.target.value)} />
                     </td>
-                    <td className="py-2 text-right text-gray-600">{m.actual != null ? fmt(m.actual) : <span className="text-gray-300">-</span>}</td>
-                    <td className={`py-2 text-right font-medium ${pct == null ? 'text-gray-300' : pct >= 100 ? 'text-green-600' : pct >= 50 ? 'text-orange-500' : 'text-red-500'}`}>
+                    <td className="py-1.5 text-right text-gray-600 text-xs">{m.actual != null ? fmt(m.actual) : <span className="text-gray-300">-</span>}</td>
+                    <td className={`py-1.5 text-right font-medium text-xs ${pct == null ? 'text-gray-300' : pct >= 100 ? 'text-green-600' : pct >= 50 ? 'text-orange-500' : 'text-red-500'}`}>
                       {pct != null ? `${pct}%` : '-'}
                     </td>
                   </tr>
@@ -938,7 +984,9 @@ function FinanceGoals() {
 
 // ─── FINANCE MAIN ────────────────────────────────────────────────────────────
 function FinanceMain() {
-  const [tab, setTab] = useState('대시보드');
+  const [tab,      setTab]      = useState('대시보드');
+  const [savings,  setSavings]  = useState(MOCK_SAVINGS_INIT);
+  const [goals,    setGoals]    = useState(MOCK_GOALS_INIT);
   return (
     <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
       <div className="bg-white border-b border-gray-100 px-4 flex gap-1 shrink-0">
@@ -947,11 +995,11 @@ function FinanceMain() {
         ))}
       </div>
       {tab === '대시보드'  && <Dashboard />}
-      {tab === '자산 관리' && <AssetManagement />}
+      {tab === '자산 관리' && <AssetManagement savings={savings} setSavings={setSavings} />}
       {tab === '지출 입력' && <ExpenseInput />}
       {tab === '고정비'    && <FixedCosts />}
       {tab === '통계'      && <FinanceStats />}
-      {tab === '목표'      && <FinanceGoals />}
+      {tab === '목표'      && <FinanceGoals goals={goals} setGoals={setGoals} savings={savings} />}
     </div>
   );
 }
