@@ -433,7 +433,7 @@ function SavingsSection() {
           <input key={k} className={inp} type={t} placeholder={ph} value={form[k]} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))} />
         ))}
         <div className="flex gap-2">
-          {editId && <button onClick={()=>{setEditId(null);setForm({name:'',monthly:'',rate:'',totalMonths:'',elapsed:'']);}} className="flex-1 py-2 border border-gray-200 text-gray-500 text-sm rounded-lg hover:bg-gray-50">취소</button>}
+          {editId && <button onClick={()=>{setEditId(null);setForm({name:'',monthly:'',rate:'',totalMonths:'',elapsed:''});}} className="flex-1 py-2 border border-gray-200 text-gray-500 text-sm rounded-lg hover:bg-gray-50">취소</button>}
           <button onClick={handleSubmit} disabled={!form.name||!form.monthly} className="flex-1 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 disabled:bg-gray-100 disabled:text-gray-400">{editId?'수정':'추가'}</button>
         </div>
       </div>
